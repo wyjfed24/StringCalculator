@@ -16,7 +16,7 @@ var result = await calculator.CalcAsync(new TestExpressionParam
     new ExpressionVariableParam("a","1") }
 });
 Console.WriteLine($"{exp} = {result}");
-var exp2 = "测试+1";
+var exp2 = "-((10-测试.测试算法1)/2+(测试.测试算法2+1)^2)";
 var result2 = await calculator.CalcAsync(new TestExpressionParam { Expression = exp2, Ratio = 2 ,DynamicVariables = new List<ExpressionVariableParam> {
     new ExpressionVariableParam("a","1") }
 });
