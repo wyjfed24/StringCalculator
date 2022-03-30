@@ -1,4 +1,5 @@
 ﻿using StringCalculator.Attr;
+using StringCalculator.Enum;
 using StringCalculator.Interface;
 
 using System;
@@ -15,7 +16,9 @@ namespace StringCalculator.OperationProvider
     [Operation("+")]
     internal class AdditionProvider : IOperationProvider
     {
+
         public int Priority { get; set; } = 1;
+        public OperationType OperationType { get; set; } = OperationType.Normal;
 
         public decimal Calc(decimal left, decimal right) => left + right;
     }

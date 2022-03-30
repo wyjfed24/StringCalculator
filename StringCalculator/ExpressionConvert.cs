@@ -55,33 +55,77 @@ namespace StringCalculator
                 formatExp = $"0{formatExp}";
             //百分号替换为*0.01
             formatExp = formatExp.Replace("%", "*0.01");
-            //从左到右扫描中缀表达式，需要合并多位数或单词/中文变量
-            foreach (var charItem in formatExp)
+            //根据运算符分割表达式，获取所有元素（带括号）
+            var elems = formatExp.Split(OperationSigns.ToArray(), StringSplitOptions.None);
+            //反向根据元素分割表达式，获取所有运算符（含自定义运算符）
+            var curOperations = formatExp.Split(elems, StringSplitOptions.RemoveEmptyEntries);
+            var i = -1;
+            foreach (var elem in elems)//
             {
-                var lastElem = list.LastOrDefault();//上一次的元素
-                //当前元素
-                var curElem = new ExpressionItem
+                if (i >= 0 && i < curOperations.Length)//插入运算符
                 {
-                    Element = charItem.ToString(),
-                    Type = GetExpressionType(charItem)
-                };
-                //校验是否是正确的类型
-                if (!CheckIsCorrectType(lastElem, curElem))
-                    throw new Exception($"语法错误：{expressionStr}中“{lastElem?.Element}{curElem.Element}”错误");
-                if (curElem.Type == ExpressionItemType.Operation)
-                {
-                    curElem.OperationProvider = OperationProviderDic[curElem.Element];
-                    curElem.Priority = curElem.OperationProvider.Priority;
+                    if (string.IsNullOrWhiteSpace(elem))
+                        continue;
+                    var operation = curOperations[i];
+                    if (OperationProviderDic.ContainsKey(operation))
+                    {
+                        var provider = OperationProviderDic[operation];
+                        var operationElem = new ExpressionItem
+                        {
+                            Element = operation,
+                            OperationProvider = provider,
+                            Priority = provider.Priority,
+                            Type = ExpressionItemType.Operation
+                        };
+                        list.Add(operationElem);
+                    }
+                    else
+                    {
+                        var sign = "";
+                        foreach (var sub in operation)
+                        {
+                            sign += sub;
+                            if (OperationProviderDic.ContainsKey(sign))
+                            {
+                                var provider = OperationProviderDic[sign];
+                                var operationElem = new ExpressionItem
+                                {
+                                    Element = sign,
+                                    OperationProvider = provider,
+                                    Priority = provider.Priority,
+                                    Type = ExpressionItemType.Operation
+                                };
+                                list.Add(operationElem);
+                                sign = "";
+                            }
+                        }
+                    }
                 }
-                //跟上一次元素类型相同则相加，否则就添加到结果数组中
-                if (lastElem != null && (int)lastElem.Type >= 20 && (int)curElem.Type >= 20)
-                    lastElem += curElem;//直接更新上一次元素值
-                else
-                    list.Add(curElem);//添加到集合
+                foreach (var charItem in elem)
+                {
+                    var lastElem = list.LastOrDefault();//上一次的元素
+                    //当前元素
+                    var curElem = new ExpressionItem
+                    {
+                        Element = charItem.ToString(),
+                        Type = GetExpressionType(charItem)
+                    };
+                    //校验是否是正确的类型
+                    //if (!CheckIsCorrectType(lastElem, curElem))
+                    //    throw new Exception($"语法错误：{expressionStr}中“{lastElem?.Element}{curElem.Element}”错误");
+                    //跟上一次元素类型相同则相加，否则就添加到结果数组中
+                    if (lastElem != null && ((lastElem.Type == ExpressionItemType.Number && lastElem.Type == curElem.Type) || (lastElem.Type == ExpressionItemType.Variable && (int)curElem.Type >= 20)))
+                        lastElem += curElem;//直接更新上一次元素值
+                    else
+                        list.Add(curElem);//添加到集合
+                }
+                i++;
             }
             //括号匹配校验
             if (list.Count(x => x.Type == ExpressionItemType.LeftParenthesis) != list.Count(x => x.Type == ExpressionItemType.RightParenthesis))
                 throw new Exception($"语法错误：{expressionStr}中“括号不匹配”");
+            list.ForEach(x => Console.WriteLine(x.Element));
+            Console.WriteLine();
             return list;
         }
         /// <summary>

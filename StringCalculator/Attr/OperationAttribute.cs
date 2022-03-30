@@ -9,8 +9,11 @@ namespace StringCalculator.Attr
     /// <summary>
     /// 运算符特性
     /// </summary>
-    internal class OperationAttribute : Attribute
+    public class OperationAttribute : Attribute
     {
+        /// <summary>
+        /// 运算符标识[字符或字符+数字]
+        /// </summary>
         public string Name { get; set; }
 
         public OperationAttribute(string name)

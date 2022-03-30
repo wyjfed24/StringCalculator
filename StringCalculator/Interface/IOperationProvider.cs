@@ -1,4 +1,6 @@
-﻿using System;
+﻿using StringCalculator.Enum;
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,6 +13,10 @@ namespace StringCalculator.Interface
     /// </summary>
     public interface IOperationProvider
     {
+        /// <summary>
+        /// 运算类型
+        /// </summary>
+        OperationType OperationType { get; set; }
         /// <summary>
         /// 优先级
         /// </summary>

@@ -174,10 +174,19 @@ namespace StringCalculator
                 }
                 else if (item.Type == ExpressionItemType.Operation)
                 {
-                    var rightNumber = stack.Pop();
-                    var leftNumber = stack.Pop();
-                    var value = item.OperationProvider.Calc(leftNumber, rightNumber);//运算符类型OperationProvider始终有值
-                    stack.Push(value);
+                    if (item.OperationProvider.OperationType == OperationType.Normal)
+                    {
+                        var rightNumber = stack.Pop();
+                        var leftNumber = stack.Pop();
+                        var value = item.OperationProvider.Calc(leftNumber, rightNumber);//运算符类型OperationProvider始终有值
+                        stack.Push(value);
+                    }
+                    else if (item.OperationProvider.OperationType == OperationType.Right)//右运算只出栈一个元素
+                    {
+                        var rightNumber = stack.Pop();
+                        var value = item.OperationProvider.Calc(0, rightNumber);//运算符类型OperationProvider始终有值
+                        stack.Push(value);
+                    }
                 }
             }
             var result = stack.Count == 0 ? 0m : stack.Pop();

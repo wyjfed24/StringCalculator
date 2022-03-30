@@ -1,4 +1,5 @@
 ﻿using StringCalculator.Attr;
+using StringCalculator.Enum;
 using StringCalculator.Interface;
 
 using System;
@@ -16,6 +17,7 @@ namespace StringCalculator.OperationProvider
     internal class PowerProvider : IOperationProvider
     {
         public int Priority { get; set; } = 3;
+        public OperationType OperationType { get; set; } = OperationType.Normal;
         /// <summary>
         /// 执行运算
         /// </summary>
