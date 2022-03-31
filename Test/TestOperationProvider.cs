@@ -29,10 +29,10 @@ namespace Test
     /// <summary>
     /// 自定义运算
     /// </summary>
-    [Operation("sin")]
+    [Operation("sinf")]
     internal class TestOperationProvider2 : IOperationProvider
     {
-        public int Priority { get; set; } = 2;
+        public int Priority { get; set; } = 4;
         public OperationType OperationType { get; set; } = OperationType.Right;
 
 

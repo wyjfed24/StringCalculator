@@ -6,18 +6,63 @@ using StringCalculator.Utility;
 
 namespace StringCalculator
 {
+    /// <summary>
+    /// 表达式转换器
+    /// </summary>
     public class ExpressionConvert : IExpressionConvert
     {
         /// <summary>
         /// 运算提供器缓存
         /// </summary>
         private static Dictionary<string, IOperationProvider> OperationProviderDic;
+        private static Dictionary<string, List<ExpressionItem>> OperationExpressionItemListDic;
+        /// <summary>
+        /// 运算符标识集合
+        /// </summary>
         private static List<string> OperationSigns;
         static ExpressionConvert()
         {
             //预加载所有运算提供器
             OperationProviderDic = ClassFinder.GetInterfaceInstances<OperationAttribute, IOperationProvider>(x => x.Name);
             OperationSigns = OperationProviderDic.Select(x => x.Key).ToList();
+            //创建拼接运算符字典
+            BuildOperationCombinRefItem();
+        }
+
+        /// <summary>
+        /// 构建双运算符拼接字典，处理 “1+sin30” “10addmulsin30” “1+sqrt9” 情况
+        /// </summary>
+        private static void BuildOperationCombinRefItem()
+        {
+            OperationExpressionItemListDic = new Dictionary<string, List<ExpressionItem>>();
+            foreach (var item in OperationProviderDic)
+            {
+                var expItem = CreateOperationExpItem(item.Key);
+                OperationExpressionItemListDic.Add(item.Key, new List<ExpressionItem> { expItem });
+                foreach (var subItem in OperationProviderDic)
+                {
+                    var subExpItem = CreateOperationExpItem(subItem.Key);
+                    OperationExpressionItemListDic.Add(item.Key + subItem.Key, new List<ExpressionItem> { expItem, subExpItem });
+                }
+            }
+        }
+
+        /// <summary>
+        /// 创建运算元素
+        /// </summary>
+        /// <param name="operationName"></param>
+        /// <returns></returns>
+        private static ExpressionItem CreateOperationExpItem(string operationName)
+        {
+            var provider = OperationProviderDic[operationName];
+            var operationElem = new ExpressionItem
+            {
+                Element = operationName,
+                OperationProvider = provider,
+                Priority = provider.Priority,
+                Type = ExpressionItemType.Operation
+            };
+            return operationElem;
         }
 
         /// <summary>
@@ -39,11 +84,11 @@ namespace StringCalculator
         /// <returns></returns>
         internal List<ExpressionItem> ToInfixExpressionItemList(string expressionStr)
         {
-            //-((-22+人工费)×4)+123-人工费
+            //-((-22+变量.费用)×4)+123-变量.费用
             //负号情况
             //①-()
             //②-1+2
-            //③-@取费表.人工费
+            //③-变量.费用
             //④1-(-1)
             //只会出现开始带“-”和“（-”结构的负号
             if (expressionStr.Trim() == String.Empty)
@@ -58,76 +103,58 @@ namespace StringCalculator
             //根据运算符分割表达式，获取所有元素（带括号）
             var elems = formatExp.Split(OperationSigns.ToArray(), StringSplitOptions.None);
             //反向根据元素分割表达式，获取所有运算符（含自定义运算符）
-            var curOperations = formatExp.Split(elems, StringSplitOptions.RemoveEmptyEntries);
+            var operationNames = formatExp.Split(elems, StringSplitOptions.RemoveEmptyEntries);
             var i = -1;
             foreach (var elem in elems)//
             {
-                if (i >= 0 && i < curOperations.Length)//插入运算符
+                if (i >= 0 && i < operationNames.Length)//插入运算符
                 {
-                    if (string.IsNullOrWhiteSpace(elem))
+                    if (string.IsNullOrWhiteSpace(elem))//第二次循环后的空元素不处理，当使用右运算如：sin30作为开头，首个分割元素才会是空元素
                         continue;
-                    var operation = curOperations[i];
-                    if (OperationProviderDic.ContainsKey(operation))
-                    {
-                        var provider = OperationProviderDic[operation];
-                        var operationElem = new ExpressionItem
-                        {
-                            Element = operation,
-                            OperationProvider = provider,
-                            Priority = provider.Priority,
-                            Type = ExpressionItemType.Operation
-                        };
-                        list.Add(operationElem);
-                    }
-                    else
-                    {
-                        var sign = "";
-                        foreach (var sub in operation)
-                        {
-                            sign += sub;
-                            if (OperationProviderDic.ContainsKey(sign))
-                            {
-                                var provider = OperationProviderDic[sign];
-                                var operationElem = new ExpressionItem
-                                {
-                                    Element = sign,
-                                    OperationProvider = provider,
-                                    Priority = provider.Priority,
-                                    Type = ExpressionItemType.Operation
-                                };
-                                list.Add(operationElem);
-                                sign = "";
-                            }
-                        }
-                    }
+                    var operationName = operationNames[i];
+                    var operationExpItems = OperationExpressionItemListDic[operationName];
+                    list.AddRange(operationExpItems);
                 }
-                foreach (var charItem in elem)
-                {
-                    var lastElem = list.LastOrDefault();//上一次的元素
-                    //当前元素
-                    var curElem = new ExpressionItem
-                    {
-                        Element = charItem.ToString(),
-                        Type = GetExpressionType(charItem)
-                    };
-                    //校验是否是正确的类型
-                    //if (!CheckIsCorrectType(lastElem, curElem))
-                    //    throw new Exception($"语法错误：{expressionStr}中“{lastElem?.Element}{curElem.Element}”错误");
-                    //跟上一次元素类型相同则相加，否则就添加到结果数组中
-                    if (lastElem != null && ((lastElem.Type == ExpressionItemType.Number && lastElem.Type == curElem.Type) || (lastElem.Type == ExpressionItemType.Variable && (int)curElem.Type >= 20)))
-                        lastElem += curElem;//直接更新上一次元素值
-                    else
-                        list.Add(curElem);//添加到集合
-                }
+                CreateElemExpItems(elem, expressionStr, list);
                 i++;
             }
             //括号匹配校验
             if (list.Count(x => x.Type == ExpressionItemType.LeftParenthesis) != list.Count(x => x.Type == ExpressionItemType.RightParenthesis))
                 throw new Exception($"语法错误：{expressionStr}中“括号不匹配”");
-            list.ForEach(x => Console.WriteLine(x.Element));
+            list.ForEach(x => Console.Write(x.Element));
             Console.WriteLine();
             return list;
         }
+
+        /// <summary>
+        /// 创建数字变量括号元素
+        /// </summary>
+        /// <param name="elem"></param>
+        /// <param name="expressionStr"></param>
+        /// <param name="list"></param>
+        /// <exception cref="Exception"></exception>
+        private void CreateElemExpItems(string elem, string expressionStr, List<ExpressionItem> list)
+        {
+            foreach (var charItem in elem)
+            {
+                var lastElem = list.LastOrDefault();//上一次的元素
+                                                    //当前元素
+                var curElem = new ExpressionItem
+                {
+                    Element = charItem.ToString(),
+                    Type = GetExpressionType(charItem)
+                };
+                //校验是否是正确的类型
+                if (!CheckIsCorrectType(lastElem, curElem))
+                    throw new Exception($"语法错误：{expressionStr}中“{lastElem?.Element}{curElem.Element}”错误");
+                //跟上一次元素类型相同则相加，否则就添加到结果数组中
+                if (lastElem != null && ((lastElem.Type == ExpressionItemType.Number && lastElem.Type == curElem.Type) || (lastElem.Type == ExpressionItemType.Variable && (int)curElem.Type >= 20)))
+                    lastElem += curElem;//直接更新上一次元素值
+                else
+                    list.Add(curElem);//添加到集合
+            }
+        }
+
         /// <summary>
         /// 表达式元素数组转后缀表达式元素数组
         /// </summary>
@@ -168,6 +195,8 @@ namespace StringCalculator
             //将剩余运算符写入结果集
             while (operationStack.Count > 0)
                 formulaList.Add(operationStack.Pop());
+            formulaList.ForEach(x => Console.Write($"{x.Element} "));
+            Console.WriteLine();
             return formulaList;
         }
 

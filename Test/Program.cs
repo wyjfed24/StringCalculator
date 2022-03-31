@@ -22,6 +22,6 @@ IExpressionCalculator calculator = new ExpressionCalculator(expressionConvert);
 //var result2 = await calculator.CalcAsync(new TestExpressionParam { Expression = exp2, Ratio = 2 });
 //Console.WriteLine($"{exp2} = {result2}");
 
-var exp2 = "sin30-(10-sin5)addmul2(2+1)+sin30";
+var exp2 = "sqrt 9 + sinf 30";
 var result2 = await calculator.CalcAsync(new TestExpressionParam { Expression = exp2, Ratio = 2 });
 Console.WriteLine($"{exp2} = {result2}");
