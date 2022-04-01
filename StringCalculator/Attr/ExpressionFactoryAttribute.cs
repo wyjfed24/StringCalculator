@@ -5,6 +5,7 @@ namespace StringCalculator.Attr
     /// <summary>
     /// 表达式工厂特性
     /// </summary>
+    [AttributeUsage(AttributeTargets.Class)]
     public class ExpressionFactoryAttribute : Attribute
     {
         /// <summary>

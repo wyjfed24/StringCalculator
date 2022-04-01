@@ -5,6 +5,7 @@ namespace StringCalculator.Attr
     /// <summary>
     /// 表达式处理类特性
     /// </summary>
+    [AttributeUsage(AttributeTargets.Class)]
     public class ExpressionProviderAttribute : Attribute
     {
         /// <summary>

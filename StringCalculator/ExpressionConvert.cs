@@ -115,6 +115,7 @@ namespace StringCalculator
                     var operationExpItems = OperationExpressionItemListDic[operationName];
                     list.AddRange(operationExpItems);
                 }
+                //创建数字变量括号元素
                 CreateElemExpItems(elem, expressionStr, list);
                 i++;
             }
@@ -223,6 +224,7 @@ namespace StringCalculator
                 case ExpressionItemType.RightParenthesis:
                     return curType == ExpressionItemType.RightParenthesis || curType == ExpressionItemType.Operation;
                 case ExpressionItemType.Number:
+                    return curType == ExpressionItemType.RightParenthesis || curType == ExpressionItemType.Operation || curType == ExpressionItemType.Number;
                 case ExpressionItemType.Variable:
                     return curType == ExpressionItemType.RightParenthesis || curType == ExpressionItemType.Operation || curType == ExpressionItemType.Number || curType == ExpressionItemType.Variable;
                 default:

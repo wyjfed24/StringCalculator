@@ -9,6 +9,7 @@ namespace StringCalculator.Attr
     /// <summary>
     /// 运算符特性
     /// </summary>
+    [AttributeUsage(AttributeTargets.Class)]
     public class OperationAttribute : Attribute
     {
         /// <summary>
