@@ -86,10 +86,11 @@ namespace StringCalculator
         {
             //-((-22+变量.费用)×4)+123-变量.费用
             //负号情况
-            //①-()
-            //②-1+2
-            //③-变量.费用
-            //④1-(-1)
+            //① -()
+            //② -1+2
+            //③ -变量.费用
+            //④ 1-(-1)
+            //⑤ -sin30
             //只会出现开始带“-”和“（-”结构的负号
             if (expressionStr.Trim() == String.Empty)
                 throw new Exception("不能计算空表达式");

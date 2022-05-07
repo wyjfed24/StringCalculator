@@ -22,6 +22,6 @@ Console.WriteLine($"{exp} = {result}");
 //var result2 = await calculator.CalcAsync(new TestExpressionParam { Expression = exp2, Ratio = 2 });
 //Console.WriteLine($"{exp2} = {result2}");
 
-var exp2 = "sqrt 9 + sinf 30";
+var exp2 = "-sqrt9 - sinf 30";
 var result2 = await calculator.CalcAsync(new DefaultExpressionParam { Expression = exp2 });
 Console.WriteLine($"{exp2} = {result2}");
