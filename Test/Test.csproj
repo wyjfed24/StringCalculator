@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Z.Expressions.Eval" Version="4.0.83" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\StringCalculator\StringCalculator.csproj" />
   </ItemGroup>
 
