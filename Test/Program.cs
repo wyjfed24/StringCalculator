@@ -17,7 +17,7 @@ IExpressionConvert expressionConvert = new ExpressionConvert();
 IExpressionCalculator calculator = new ExpressionCalculator(expressionConvert);
 
 sw.Start();
-var exp = "测试.测试算法1+测试.测试算法2";
+var exp = "sqrt9 - (1/sinf 30) + sinf30/3";
 var result = await calculator.CalcAsync(new TestExpressionParam
 {
     Expression = exp,
@@ -33,7 +33,7 @@ Console.WriteLine($"执行时间：{sw.ElapsedMilliseconds}");
 //var result2 = await calculator.CalcAsync(new TestExpressionParam { Expression = exp2, Ratio = 2 });
 //Console.WriteLine($"{exp2} = {result2}");
 sw.Restart();
-var exp2 = "-sqrt9 - sinf 30";
+var exp2 = "-sqrt9 - 1/sinf 30 + sinf30/3";
 var result2 = await calculator.CalcAsync(new DefaultExpressionParam { Expression = exp2 });
 Console.WriteLine($"{exp2} = {result2}");
 sw.Stop();

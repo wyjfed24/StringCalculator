@@ -39,8 +39,12 @@ namespace StringCalculator
             {
                 var expItem = CreateOperationExpItem(item.Key);
                 OperationExpressionItemListDic.Add(item.Key, new List<ExpressionItem> { expItem });
+                if (item.Value.OperationType != OperationType.Normal)
+                    continue;
                 foreach (var subItem in OperationProviderDic)
                 {
+                    if (subItem.Value.OperationType == OperationType.Normal)
+                        continue;
                     var subExpItem = CreateOperationExpItem(subItem.Key);
                     OperationExpressionItemListDic.Add(item.Key + subItem.Key, new List<ExpressionItem> { expItem, subExpItem });
                 }
@@ -98,7 +102,7 @@ namespace StringCalculator
             //清除空格,把表达式中负号替换为“0-X”形式，
             var formatExp = expressionStr.Replace(" ", "").Replace("(-", "(0-");
             if (formatExp.FirstOrDefault() == '-')
-                formatExp = $"0{formatExp}";
+                formatExp = $"0{formatExp}";            
             //百分号替换为*0.01
             formatExp = formatExp.Replace("%", "*0.01");
             //根据运算符分割表达式，获取所有元素（带括号）
@@ -116,7 +120,7 @@ namespace StringCalculator
                     var operationExpItems = OperationExpressionItemListDic[operationName];
                     list.AddRange(operationExpItems);
                 }
-                //创建数字变量括号元素
+                //创建数字/变量/括号元素
                 CreateElemExpItems(elem, expressionStr, list);
                 i++;
             }
@@ -124,7 +128,6 @@ namespace StringCalculator
             if (list.Count(x => x.Type == ExpressionItemType.LeftParenthesis) != list.Count(x => x.Type == ExpressionItemType.RightParenthesis))
                 throw new Exception($"语法错误：{expressionStr}中“括号不匹配”");
             list.ForEach(x => Console.Write(x.Element));
-            Console.WriteLine();
             return list;
         }
 
